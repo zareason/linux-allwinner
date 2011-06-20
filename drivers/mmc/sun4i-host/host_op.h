@@ -197,6 +197,7 @@ struct awsmc_host {
     s32                         cd_gpio;
     s32                         cd_mode;
     u32                         pio_hdle;
+    u32                         read_only;
     
 #ifdef CONFIG_CPU_FREQ
 	struct notifier_block       freq_transition;
@@ -214,7 +215,7 @@ struct awsmc_host {
 	struct proc_dir_entry		*proc_root;
 	struct proc_dir_entry		*proc_drvver;
 	struct proc_dir_entry		*proc_hostinfo;
-	struct proc_dir_entry		*proc_deglevel;
+	struct proc_dir_entry		*proc_dbglevel;
 	struct proc_dir_entry		*proc_regs;
 #endif
 };
