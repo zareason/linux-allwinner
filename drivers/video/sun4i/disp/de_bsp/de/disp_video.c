@@ -109,6 +109,7 @@ static __inline __s32 Hal_Set_Frame(__u32 sel, __u32 tcon_index, __u32 id)
     	scal_addr.ch2_addr= (__u32)OSAL_VAtoPA((void*)(g_video[sel][id].video_cur.addr[2]));
 
     	in_size.src_width = scaler->in_fb.size.width;
+    	in_size.src_height = scaler->in_fb.size.height;
     	in_size.x_off =  scaler->src_win.x;
     	in_size.y_off =  scaler->src_win.y;
     	in_size.scal_height=  scaler->src_win.height;
@@ -129,7 +130,7 @@ static __inline __s32 Hal_Set_Frame(__u32 sel, __u32 tcon_index, __u32 id)
     	{
     		scaler->out_fb.cs_mode = DISP_BT601;
     	}	
-
+        
         if(scaler->in_fb.b_trd_src)
         {
             __scal_3d_inmode_t inmode;

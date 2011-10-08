@@ -735,7 +735,6 @@ __s32 BSP_disp_layer_set_screen_window(__u32 sel, __u32 hid,__disp_rect_t * regn
     __u32           cpu_sr;
     __layer_man_t * layer_man;
 
-
     hid = HANDTOID(hid);
     HLID_ASSERT(hid, gdisp.screen[sel].max_layers);
 
@@ -840,9 +839,7 @@ __s32 BSP_disp_layer_set_para(__u32 sel, __u32 hid,__disp_layer_info_t *player)
     __layer_man_t * layer_man;
     __u32 prio_tmp = 0;
     __u32 size;    
-    
-    player->b_from_screen = 0;
-    
+        
     hid = HANDTOID(hid);
     HLID_ASSERT(hid, gdisp.screen[sel].max_layers);
 
@@ -934,8 +931,8 @@ __s32 BSP_disp_layer_set_para(__u32 sel, __u32 hid,__disp_layer_info_t *player)
                 memcpy(&scaler->in_fb, &player->fb, sizeof(__disp_fb_t));
                 DE_SCAL_Input_Select(layer_man->scaler_index, 0);
             }
-            scaler->b_trd_out = layer_man->para.b_trd_out;
-            scaler->out_trd_mode = layer_man->para.out_trd_mode;
+            scaler->b_trd_out = player->b_trd_out;
+            scaler->out_trd_mode = player->out_trd_mode;
             DE_SCAL_Output_Select(layer_man->scaler_index, sel);
             Scaler_Set_Para(layer_man->scaler_index, scaler);
         }
