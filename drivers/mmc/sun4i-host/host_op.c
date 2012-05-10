@@ -643,12 +643,11 @@ static void awsmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
     }
 }
 
-/*
 #ifdef CONFIG_DEBUG_FS
 
 #define AWSMC_DRV_VERSION "0.03"
 
-/ * driver version show * /
+/* driver version show */
 static int awsmc_version_show(struct seq_file * seq, void *data)
 {
     seq_printf(seq, "MMC driver version: %s\n", AWSMC_DRV_VERSION);
@@ -669,7 +668,7 @@ static const struct file_operations awsmc_fops_version = {
     .release	= single_release,
 };
 
-/ * driver control info. show * /
+/* driver control info. show */
 static int awsmc_hostinfo_show(struct seq_file * seq, void *data)
 {
     struct awsmc_host *smc_host = (struct awsmc_host *)seq->private;
@@ -702,7 +701,7 @@ static const struct file_operations awsmc_fops_hostinfo = {
     .release	= single_release,
 };
 
-/ * register show * /
+/* register show */
 static int awsmc_regs_show(struct seq_file * seq, void *data)
 {
     struct awsmc_host *smc_host = (struct awsmc_host *)seq->private;
@@ -785,7 +784,6 @@ static inline void awsmc_debugfs_attach(struct awsmc_host *smc_host) { }
 static inline void awsmc_debugfs_remove(struct awsmc_host *smc_host) { }
 
 #endif
-*/
 
 #ifdef CONFIG_PROC_FS
 static const char awsmc_drv_version[] = "AWSMC Driver Version : 0.04 (move debugfs to procfs)";
@@ -964,135 +962,6 @@ static inline void awsmc_procfs_remove(struct awsmc_host *smc_host)
 
     remove_proc_entry("insert", smc_host->proc_root);
     remove_proc_entry("debug-level", smc_host->proc_root);
-    remove_proc_entry("register", smc_host->proc_root);
-    remove_proc_entry("hostinfo", smc_host->proc_root);
-    remove_proc_entry("drv-version", smc_host->proc_root);
-    remove_proc_entry(awsmc_proc_rootname, NULL);
-}
-
-#else
-
-static inline void awsmc_procfs_attach(struct awsmc_host *smc_host) { }
-static inline void awsmc_procfs_remove(struct awsmc_host *smc_host) { }
-
-#endif
-*/
-
-#ifdef CONFIG_PROC_FS
-static const char awsmc_drv_version[] = "AWSMC Driver Version : 0.04 (move debugfs to procfs)";
-
-static int awsmc_proc_read_drvversion(char *page, char **start, off_t off, int count, int *eof, void *data)
-{
-    char *p = page;
-
-    p += sprintf(p, "%s\n", awsmc_drv_version);
-    return p - page;
-}
-
-static int awsmc_proc_read_hostinfo(char *page, char **start, off_t off, int count, int *eof, void *data)
-{
-    char *p = page;
-    struct awsmc_host *smc_host = (struct awsmc_host *)data;
-    struct device* dev = &smc_host->pdev->dev;
-    char* clksrc[] = {"hosc", "satapll", "sdrampll_p", "hosc"};
-    char* cd_mode[] = {"none", "gpio mode", "data3 mode", "always in"};
-
-    p += sprintf(p, "%s controller information:\n", dev_name(dev));
-    p += sprintf(p, "reg base \t : %p\n", smc_host->smc_base);
-    p += sprintf(p, "clock source\t : %s\n", clksrc[smc_host->clk_source]);
-    p += sprintf(p, "mod clock\t : %d\n", smc_host->mod_clk);
-    p += sprintf(p, "card clock\t : %d\n", smc_host->real_cclk);
-    p += sprintf(p, "bus width\t : %d\n", smc_host->bus_width);
-    p += sprintf(p, "present  \t : %d\n", smc_host->present);
-    p += sprintf(p, "cd mode  \t : %s\n", cd_mode[smc_host->cd_mode]);
-    p += sprintf(p, "read only\t : %d\n", smc_host->read_only);
-
-    return p - page;
-}
-
-
-static int awsmc_proc_read_regs(char *page, char **start, off_t off, int count, int *eof, void *data)
-{
-    char *p = page;
-    struct awsmc_host *smc_host = (struct awsmc_host *)data;
-    u32 i;
-
-    p += sprintf(p, "Dump smc regs:\n");
-
-    for (i=0; i<0x100; i+=4)
-    {
-        if (!(i&0xf))
-            p += sprintf(p, "\n0x%08x : ", i);
-        p += sprintf(p, "%08x ", sdc_read(smc_host->smc_base + i));
-    }
-    p += sprintf(p, "\n");
-
-    return p - page;
-}
-
-static int awsmc_proc_read_dbglevel(char *page, char **start, off_t off, int count, int *eof, void *data)
-{
-    char *p = page;
-
-    p += sprintf(p, "debug-level : %d\n", smc_debug);
-    return p - page;
-}
-
-static int awsmc_proc_write_dbglevel(struct file *file, const char __user *buffer, unsigned long count, void *data)
-{
-    smc_debug = simple_strtoul(buffer, NULL, sizeof(smc_debug));
-
-    return sizeof(smc_debug);
-}
-
-static inline void awsmc_procfs_attach(struct awsmc_host *smc_host)
-{
-    struct device *dev = &smc_host->pdev->dev;
-    char awsmc_proc_rootname[16] = {0};
-
-    //make mmc dir in proc fs path
-    sprintf(awsmc_proc_rootname, "driver/%s", dev_name(dev));
-    smc_host->proc_root = proc_mkdir(awsmc_proc_rootname, NULL);
-    if (IS_ERR(smc_host->proc_root))
-    {
-        awsmc_msg("%s: failed to create procfs \"driver/mmc\".\n", dev_name(dev));
-    }
-
-    smc_host->proc_drvver = create_proc_read_entry("drv-version", 0444, smc_host->proc_root, awsmc_proc_read_drvversion, NULL);
-    if (IS_ERR(smc_host->proc_root))
-    {
-        awsmc_msg("%s: failed to create procfs \"drv-version\".\n", dev_name(dev));
-    }
-
-    smc_host->proc_hostinfo = create_proc_read_entry("hostinfo", 0444, smc_host->proc_root, awsmc_proc_read_hostinfo, smc_host);
-    if (IS_ERR(smc_host->proc_hostinfo))
-    {
-        awsmc_msg("%s: failed to create procfs \"hostinfo\".\n", dev_name(dev));
-    }
-
-    smc_host->proc_regs = create_proc_read_entry("register", 0444, smc_host->proc_root, awsmc_proc_read_regs, smc_host);
-    if (IS_ERR(smc_host->proc_regs))
-    {
-        awsmc_msg("%s: failed to create procfs \"hostinfo\".\n", dev_name(dev));
-    }
-
-    smc_host->proc_dbglevel = create_proc_entry("debug-level", 0644, smc_host->proc_root);
-    if (IS_ERR(smc_host->proc_dbglevel))
-    {
-        awsmc_msg("%s: failed to create procfs \"debug-level\".\n", dev_name(dev));
-    }
-    smc_host->proc_dbglevel->data = smc_host;
-    smc_host->proc_dbglevel->read_proc = awsmc_proc_read_dbglevel;
-    smc_host->proc_dbglevel->write_proc = awsmc_proc_write_dbglevel;
-}
-
-static inline void awsmc_procfs_remove(struct awsmc_host *smc_host)
-{
-    struct device *dev = &smc_host->pdev->dev;
-    char awsmc_proc_rootname[16] = {0};
-    sprintf(awsmc_proc_rootname, "driver/%s", dev_name(dev));
-
-    remove_proc_entry("proc_dbglevel", smc_host->proc_root);
     remove_proc_entry("register", smc_host->proc_root);
     remove_proc_entry("hostinfo", smc_host->proc_root);
     remove_proc_entry("drv-version", smc_host->proc_root);

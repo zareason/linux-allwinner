@@ -228,7 +228,7 @@ struct awsmc_host {
 #ifdef CONFIG_CPU_FREQ
 	struct notifier_block       freq_transition;
 #endif
-/*
+
 #ifdef CONFIG_DEBUG_FS
 	struct dentry		        *debug_root;
 	struct dentry		        *driver_version;
@@ -236,7 +236,7 @@ struct awsmc_host {
 	struct dentry		        *debug_level;
 	struct dentry		        *debug_regs;
 #endif
-*/
+
 #ifdef CONFIG_PROC_FS
 	struct proc_dir_entry		*proc_root;
 	struct proc_dir_entry		*proc_drvver;
