@@ -71,6 +71,15 @@ extern struct cpufreq_frequency_table sun4i_freq_tbl[];
 extern unsigned int sun4i_freq_tbl_count;
 extern __u32 sun4i_div_order_tbl[][2];
 
+#ifdef CONFIG_CPU_FREQ_DVFS
+struct cpufreq_dvfs {
+    unsigned int    freq;   /* cpu frequency    */
+    unsigned int    volt;   /* voltage for the frequency    */
+};
+
+extern struct cpufreq_dvfs dvfs_table[];
+#endif
+
 #endif  /* #ifndef __SUN4I_CPU_FREQ_H__ */
 
 
