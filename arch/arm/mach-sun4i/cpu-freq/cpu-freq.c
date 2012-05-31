@@ -196,6 +196,8 @@ static inline int __set_cpufreq_hw(struct sun4i_cpu_freq_t *freq)
 static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_freq_t *new)
 {
     int     ret = 0;
+    unsigned int i = 0;
+    unsigned int j = 0;
     struct sun4i_cpu_freq_t old_freq, new_freq;
 
     if(!old || !new) {
@@ -207,109 +209,64 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
     CPUFREQ_INF("cpu: %dMhz->%dMhz\n", old_freq.pll/1000000, new_freq.pll/1000000);
 
+    /* We're raising our clock */
     if(new_freq.pll > old_freq.pll) {
-        if((old_freq.pll <= 204000000) && (new_freq.pll >= 204000000)) {
-            /* set to 204Mhz (1:1:1:2) */
-            old_freq.pll = 204000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 1;
-            old_freq.div.ahb_div = 1;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 204Mhz (1:1:2:2) */
-            old_freq.div.ahb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll <= 408000000) && (new_freq.pll >= 408000000)) {
-            /* set to 408Mhz (1:1:2:2) */
-            old_freq.pll = 408000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 1;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 408Mhz (1:2:2:2) */
-            old_freq.div.axi_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll <= 816000000) && (new_freq.pll >= 816000000)) {
-            /* set to 816Mhz (1:2:2:2) */
-            old_freq.pll = 816000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 2;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 816Mhz (1:3:2:2) */
-            old_freq.div.axi_div = 3;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll <= 1200000000) && (new_freq.pll >= 1200000000)) {
-            /* set to 1200Mhz (1:3:2:2) */
-            old_freq.pll = 1200000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 3;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 1200Mhz (1:4:2:2) */
-            old_freq.div.axi_div = 4;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
+        /* We have a div table, the old and the new divs, let's change them in order */
 
-        /* adjust to target frequency */
-        ret |= __set_cpufreq_hw(&new_freq);
-    }
-    else if(new_freq.pll < old_freq.pll) {
-        if((old_freq.pll > 1200000000) && (new_freq.pll <= 1200000000)) {
-            /* set to 1200Mhz (1:3:2:2) */
-            old_freq.pll = 1200000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 3;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll > 816000000) && (new_freq.pll <= 816000000)) {
-            /* set to 816Mhz (1:3:2:2) */
-            old_freq.pll = 816000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 3;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 816Mhz (1:2:2:2) */
-            old_freq.div.axi_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll > 408000000) && (new_freq.pll <= 408000000)) {
-            /* set to 408Mhz (1:2:2:2) */
-            old_freq.pll = 408000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 2;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 816Mhz (1:1:2:2) */
-            old_freq.div.axi_div = 1;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
-        if((old_freq.pll > 204000000) && (new_freq.pll <= 204000000)) {
-            /* set to 204Mhz (1:1:2:2) */
-            old_freq.pll = 204000000;
-            old_freq.div.cpu_div = 1;
-            old_freq.div.axi_div = 1;
-            old_freq.div.ahb_div = 2;
-            old_freq.div.apb_div = 2;
-            ret |= __set_cpufreq_hw(&old_freq);
-            /* set to 204Mhz (1:1:1:2) */
-            old_freq.div.ahb_div = 1;
-            ret |= __set_cpufreq_hw(&old_freq);
-        }
+        /* Figure out old one*/
+        while(sun4i_div_order_tbl[i][0] != 0 &&
+              sun4i_div_order_tbl[i][0] != *((__u32*) &old_freq.div)) i++;
 
-        /* adjust to target frequency */
-        ret |= __set_cpufreq_hw(&new_freq);
+        /* Figure out new one */
+        j = i; /* it's either the same or bigger */
+        while(sun4i_div_order_tbl[j][0] != 0 &&
+              sun4i_div_order_tbl[j][0] != *((__u32*) &new_freq.div)) j++;
+
+        for (; sun4i_div_order_tbl[i+1][0] != 0 && i<j; i++) {
+            old_freq.pll = sun4i_div_order_tbl[i][1];
+            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i][0]);
+            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i][0]);
+            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i][0]);
+            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i][0]);
+            ret |= __set_cpufreq_hw(&old_freq);
+
+            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i+1][0]);
+            ret |= __set_cpufreq_hw(&old_freq);
+        }
+    /* We're lowering our clock */
+    }else if(new_freq.pll < old_freq.pll) {
+        /* We have a div table, the old and the new divs, let's change them in order */
+
+        /* Figure out new one*/
+        while(sun4i_div_order_tbl[i][0] != 0 &&
+              sun4i_div_order_tbl[i][0] != *((__u32*) &new_freq.div)) i++;
+
+        /* Figure out old one */
+        j = i; /* it's either the same or bigger */
+        while(sun4i_div_order_tbl[j][0] != 0 &&
+              sun4i_div_order_tbl[j][0] != *((__u32*) &old_freq.div)) j++;
+
+        for (j--; i > 0 && i<j; j--) {
+            old_freq.pll = sun4i_div_order_tbl[i][1];
+            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j][0]);
+            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j][0]);
+            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j][0]);
+            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j][0]);
+            ret |= __set_cpufreq_hw(&old_freq);
+
+            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j-1][0]);
+            ret |= __set_cpufreq_hw(&old_freq);
+        }
     }
+
+    /* adjust to target frequency */
+    ret |= __set_cpufreq_hw(&new_freq);
 
     if(ret) {
         unsigned int    frequency;
