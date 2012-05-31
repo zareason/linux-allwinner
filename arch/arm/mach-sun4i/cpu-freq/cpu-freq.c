@@ -88,7 +88,7 @@ static int sun4i_cpufreq_verify(struct cpufreq_policy *policy)
 static void sun4i_cpufreq_show(const char *pfx, struct sun4i_cpu_freq_t *cfg)
 {
 	CPUFREQ_DBG("%s: pll=%u, cpudiv=%u, axidiv=%u, ahbdiv=%u, apb=%u\n",
-        pfx, cfg->pll, cfg->div.cpu_div, cfg->div.axi_div, cfg->div.ahb_div, cfg->div.apb_div);
+        pfx, cfg->pll, cfg->div.s.cpu_div, cfg->div.s.axi_div, cfg->div.s.ahb_div, cfg->div.s.apb_div);
 }
 
 
@@ -139,16 +139,16 @@ static inline int __set_cpufreq_hw(struct sun4i_cpu_freq_t *freq)
     /* try to adjust pll frequency */
     ret = clk_set_rate(clk_pll, freq->pll);
     /* try to adjust cpu frequency */
-    frequency = freq->pll / freq->div.cpu_div;
+    frequency = freq->pll / freq->div.s.cpu_div;
     ret |= clk_set_rate(clk_cpu, frequency);
     /* try to adjuxt axi frequency */
-    frequency /= freq->div.axi_div;
+    frequency /= freq->div.s.axi_div;
     ret |= clk_set_rate(clk_axi, frequency);
     /* try to adjust ahb frequency */
-    frequency /= freq->div.ahb_div;
+    frequency /= freq->div.s.ahb_div;
     ret |= clk_set_rate(clk_ahb, frequency);
     /* try to adjust apb frequency */
-    frequency /= freq->div.apb_div;
+    frequency /= freq->div.s.apb_div;
     ret |= clk_set_rate(clk_apb, frequency);
 
     return ret;
@@ -201,25 +201,25 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
         /* Figure out old one*/
         while(sun4i_div_order_tbl[i][0] != 0 &&
-              sun4i_div_order_tbl[i][0] != *((__u32*) &old_freq.div)) i++;
+              sun4i_div_order_tbl[i][0] != old_freq.div.i) i++;
 
         /* Figure out new one */
         j = i; /* it's either the same or bigger */
         while(sun4i_div_order_tbl[j][0] != 0 &&
-              sun4i_div_order_tbl[j][0] != *((__u32*) &new_freq.div)) j++;
+              sun4i_div_order_tbl[j][0] != new_freq.div.i) j++;
 
         for (; sun4i_div_order_tbl[i+1][0] != 0 && i<j; i++) {
             old_freq.pll = sun4i_div_order_tbl[i][1];
-            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i][0]);
-            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i][0]);
-            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i][0]);
-            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i][0]);
+            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i][0]);
+            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i][0]);
+            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i][0]);
+            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i][0]);
             ret |= __set_cpufreq_hw(&old_freq);
 
-            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i+1][0]);
             ret |= __set_cpufreq_hw(&old_freq);
         }
     /* We're lowering our clock */
@@ -228,25 +228,25 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
         /* Figure out new one*/
         while(sun4i_div_order_tbl[i][0] != 0 &&
-              sun4i_div_order_tbl[i][0] != *((__u32*) &new_freq.div)) i++;
+              sun4i_div_order_tbl[i][0] != new_freq.div.i) i++;
 
         /* Figure out old one */
         j = i; /* it's either the same or bigger */
         while(sun4i_div_order_tbl[j][0] != 0 &&
-              sun4i_div_order_tbl[j][0] != *((__u32*) &old_freq.div)) j++;
+              sun4i_div_order_tbl[j][0] != old_freq.div.i) j++;
 
         for (j--; i > 0 && i<j; j--) {
             old_freq.pll = sun4i_div_order_tbl[i][1];
-            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j][0]);
-            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j][0]);
-            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j][0]);
-            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j][0]);
+            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j][0]);
+            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j][0]);
+            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j][0]);
+            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j][0]);
             ret |= __set_cpufreq_hw(&old_freq);
 
-            old_freq.div.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j-1][0]);
             ret |= __set_cpufreq_hw(&old_freq);
         }
     }
@@ -269,13 +269,13 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
         clk_set_rate(clk_apb, frequency);
 
         clk_set_rate(clk_pll, old->pll);
-        frequency = old->pll / old->div.cpu_div;
+        frequency = old->pll / old->div.s.cpu_div;
         clk_set_rate(clk_cpu, frequency);
-        frequency /= old->div.axi_div;
+        frequency /= old->div.s.axi_div;
         clk_set_rate(clk_axi, frequency);
-        frequency /= old->div.ahb_div;
+        frequency /= old->div.s.ahb_div;
         clk_set_rate(clk_ahb, frequency);
-        frequency /= old->div.apb_div;
+        frequency /= old->div.s.apb_div;
         clk_set_rate(clk_apb, frequency);
 
         CPUFREQ_ERR(KERN_ERR "no compatible settings cpu freq for %d\n", new_freq.pll);
@@ -439,7 +439,7 @@ static int sun4i_cpufreq_target(struct cpufreq_policy *policy, __u32 freq, __u32
 
     /* update the target frequency */
     freq_cfg.pll = sun4i_freq_tbl[index].frequency * 1000;
-    freq_cfg.div = *(struct sun4i_clk_div_t *)&sun4i_freq_tbl[index].index;
+    freq_cfg.div.i = sun4i_freq_tbl[index].index;
     CPUFREQ_DBG("%s: target frequency find is %u, entry %u\n", __func__, freq_cfg.pll, index);
 
     /* try to set target frequency */
@@ -529,13 +529,13 @@ static int sun4i_cpufreq_getcur(struct sun4i_cpu_freq_t *cfg)
 
 	cfg->pll = clk_get_rate(clk_pll);
     freq = clk_get_rate(clk_cpu);
-    cfg->div.cpu_div = cfg->pll / freq;
+    cfg->div.s.cpu_div = cfg->pll / freq;
     freq0 = clk_get_rate(clk_axi);
-    cfg->div.axi_div = freq / freq0;
+    cfg->div.s.axi_div = freq / freq0;
     freq = clk_get_rate(clk_ahb);
-    cfg->div.ahb_div = freq0 / freq;
+    cfg->div.s.ahb_div = freq0 / freq;
     freq0 = clk_get_rate(clk_apb);
-    cfg->div.apb_div = freq /freq0;
+    cfg->div.s.apb_div = freq /freq0;
 
 	return 0;
 }
@@ -572,10 +572,10 @@ static int sun4i_cpufreq_suspend(struct cpufreq_policy *policy)
 
     /* set cpu frequency to 60M hz for standby */
     suspend.pll = 60000000;
-    suspend.div.cpu_div = 1;
-    suspend.div.axi_div = 1;
-    suspend.div.ahb_div = 1;
-    suspend.div.apb_div = 2;
+    suspend.div.s.cpu_div = 1;
+    suspend.div.s.axi_div = 1;
+    suspend.div.s.ahb_div = 1;
+    suspend.div.s.apb_div = 2;
     __set_cpufreq_target(&suspend_freq, &suspend);
 
     return 0;

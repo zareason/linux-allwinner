@@ -55,7 +55,10 @@ struct sun4i_clk_div_t {
 
 struct sun4i_cpu_freq_t {
     __u32                   pll;    /* core pll frequency value */
-    struct sun4i_clk_div_t  div;    /* division configuration   */
+    union {
+        struct sun4i_clk_div_t s;    /* division configuration   */
+        __u32 i;
+    } div;
 };
 
 #define SUN4I_CLK_DIV(cpu_div, axi_div, ahb_div, apb_div)       \
