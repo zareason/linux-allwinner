@@ -210,16 +210,10 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
         for (; sun4i_div_order_tbl[i+1][0] != 0 && i<j; i++) {
             old_freq.pll = sun4i_div_order_tbl[i][1];
-            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i][0]);
-            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i][0]);
-            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i][0]);
-            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i][0]);
+            old_freq.div.i = sun4i_div_order_tbl[i][0];
             ret |= __set_cpufreq_hw(&old_freq);
 
-            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[i+1][0]);
-            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[i+1][0]);
+            old_freq.div.i = sun4i_div_order_tbl[i+1][0];
             ret |= __set_cpufreq_hw(&old_freq);
         }
     /* We're lowering our clock */
@@ -236,17 +230,11 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
               sun4i_div_order_tbl[j][0] != old_freq.div.i) j++;
 
         for (j--; i > 0 && i<j; j--) {
-            old_freq.pll = sun4i_div_order_tbl[i][1];
-            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j][0]);
-            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j][0]);
-            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j][0]);
-            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j][0]);
+            old_freq.pll = sun4i_div_order_tbl[j][1];
+            old_freq.div.i = sun4i_div_order_tbl[j][0];
             ret |= __set_cpufreq_hw(&old_freq);
 
-            old_freq.div.s.cpu_div = SUN4I_CLK_DIV_CPU(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.s.axi_div = SUN4I_CLK_DIV_AXI(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.s.ahb_div = SUN4I_CLK_DIV_AHB(sun4i_div_order_tbl[j-1][0]);
-            old_freq.div.s.apb_div = SUN4I_CLK_DIV_APB(sun4i_div_order_tbl[j-1][0]);
+            old_freq.div.i = sun4i_div_order_tbl[j-1][0];
             ret |= __set_cpufreq_hw(&old_freq);
         }
     }

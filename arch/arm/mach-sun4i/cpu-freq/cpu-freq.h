@@ -64,12 +64,6 @@ struct sun4i_cpu_freq_t {
 #define SUN4I_CLK_DIV(cpu_div, axi_div, ahb_div, apb_div)       \
                 ((cpu_div<<0)|(axi_div<<4)|(ahb_div<<8)|(apb_div<<12))
 
-#define SUN4I_CLK_DIV_INTERNAL(clk,shift)  ((clk)>>(shift) & 0b1111)
-#define SUN4I_CLK_DIV_CPU(clk)  SUN4I_CLK_DIV_INTERNAL(clk,0)
-#define SUN4I_CLK_DIV_AXI(clk)  SUN4I_CLK_DIV_INTERNAL(clk,4)
-#define SUN4I_CLK_DIV_AHB(clk)  SUN4I_CLK_DIV_INTERNAL(clk,8)
-#define SUN4I_CLK_DIV_APB(clk)  SUN4I_CLK_DIV_INTERNAL(clk,12)
-
 extern struct cpufreq_frequency_table sun4i_freq_tbl[];
 extern unsigned int sun4i_freq_tbl_count;
 extern __u32 sun4i_div_order_tbl[][2];
