@@ -88,7 +88,7 @@ struct cpufreq_frequency_table sun4i_freq_tbl[] = {
 
 /* div, pll (Hz) table */
 __u32 sun4i_div_order_tbl[][2] = {
-    { SUN4I_CLK_DIV(1, 1, 1, 2), 192000000,  },
+    { SUN4I_CLK_DIV(1, 1, 1, 2), 204000000,  },
     { SUN4I_CLK_DIV(1, 1, 2, 2), 408000000,  },
     { SUN4I_CLK_DIV(1, 2, 2, 2), 816000000,  },
     { SUN4I_CLK_DIV(1, 3, 2, 2), 1200000000, },

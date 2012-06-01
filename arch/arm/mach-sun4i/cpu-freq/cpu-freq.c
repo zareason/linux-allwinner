@@ -201,14 +201,14 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
         /* Figure out old one */
         while(sun4i_div_order_tbl[i][1] != 0 &&
-              sun4i_div_order_tbl[i][1] <= old_freq.pll) i++;
+              sun4i_div_order_tbl[i][1] < old_freq.pll) i++;
 
         /* Figure out new one */
         j = i; /* it's either the same or bigger */
         while(sun4i_div_order_tbl[j][1] != 0 &&
-              sun4i_div_order_tbl[j][1] <= new_freq.pll) j++;
+              sun4i_div_order_tbl[j][1] < new_freq.pll) j++;
 
-        for (; sun4i_div_order_tbl[i+1][0] != 0 && i < j; i++) {
+        for (; sun4i_div_order_tbl[i+1][0] != 0 && i <= j; i++) {
             old_freq.pll = sun4i_div_order_tbl[i][1];
             old_freq.div.i = sun4i_div_order_tbl[i][0];
             ret |= __set_cpufreq_hw(&old_freq);
@@ -222,15 +222,15 @@ static int __set_cpufreq_target(struct sun4i_cpu_freq_t *old, struct sun4i_cpu_f
 
         /* Figure out new one*/
         while(sun4i_div_order_tbl[i][1] != 0 &&
-              sun4i_div_order_tbl[i][1] <= new_freq.pll) i++;
+              sun4i_div_order_tbl[i][1] < new_freq.pll) i++;
 
         /* Figure out old one */
         j = i; /* it's either the same or bigger */
         while(sun4i_div_order_tbl[j][1] != 0 &&
-              sun4i_div_order_tbl[j][1] <= old_freq.pll) j++;
+              sun4i_div_order_tbl[j][1] < old_freq.pll) j++;
 
-        for (; j > 0 && i < j; j--) {
-            old_freq.pll = sun4i_div_order_tbl[j][1];
+        for (; j > 0 && i <= j; j--) {
+            old_freq.pll = sun4i_div_order_tbl[j-1][1];
             old_freq.div.i = sun4i_div_order_tbl[j][0];
             ret |= __set_cpufreq_hw(&old_freq);
 
